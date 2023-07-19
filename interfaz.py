@@ -10,7 +10,7 @@ class Ui_MainWindow(object):
         self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.groupBox.setGeometry(QtCore.QRect(0, 0, 990, 590))
         self.groupBox.setObjectName("groupBox")
-
+        # -------- NODO 1 --------
         # Sensor 1
         self.lcdPresion1 = QtWidgets.QLCDNumber(10, self.groupBox)
         self.lcdPresion1.setGeometry(QtCore.QRect(200, 20, 300, 41))
@@ -18,12 +18,7 @@ class Ui_MainWindow(object):
         self.lcdTemperatura1 = QtWidgets.QLCDNumber(10, self.groupBox)
         self.lcdTemperatura1.setGeometry(QtCore.QRect(200, 80, 300, 41))
         self.lcdTemperatura1.setObjectName("lcdPTemperatura1")
-        '''
-        self.lcdNumberCur = QtWidgets.QLCDNumber(self.groupBox)
-        
-        self.lcdNumberCur = QtWidgets.QLCDNumber(self.groupBox)
-        '''
-        
+
         # Sensor 2 presión
         self.lcdPresion2 = QtWidgets.QLCDNumber(10, self.groupBox)
         self.lcdPresion2.setGeometry(QtCore.QRect(200, 200, 300, 41))
@@ -31,8 +26,13 @@ class Ui_MainWindow(object):
         self.lcdTemperatura2 = QtWidgets.QLCDNumber(10, self.groupBox)
         self.lcdTemperatura2.setGeometry(QtCore.QRect(200, 260, 300, 41))
         self.lcdTemperatura2.setObjectName("lcdPTemperatura2")
-        #self.lcdNumberCur2 = QtWidgets.QLCDNumber(self.groupBox)
+        
+        # -------- NODO 2 --------
 
+
+        # -------- NODO 3 --------
+
+        
         # Timestamp
         self.lcdTimestamp = QtWidgets.QLCDNumber(self.groupBox)
         self.lcdTimestamp.setGeometry(QtCore.QRect(800, 310, 151, 41))
