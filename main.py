@@ -4,7 +4,7 @@ import csv
 from PyQt5.QtWidgets import QApplication, QMainWindow 
 from PyQt5.QtCore import QTimer
 import socket
-
+import time
 from interfaz import Ui_MainWindow
 
 class Form(QMainWindow):
@@ -14,38 +14,38 @@ class Form(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        #self.i = 0 
-        #self.voltageMin = 180 
-        #self.voltageMax = 180
-        #self.ui.lcdNumberCur.display(self.i)
-
         self.ui.pushButton.clicked.connect(self.sendSincro) #Asociar la funcion enviar epoch para sincronizar
         # self.ui.pushButton.clicked.connect(self.on_message) #Asociar la funcion enviar epoch para sincronizar
-        self.ui.ei.text()
+        #self.ui.ei.text()
         self.ui.pushButton_stop.clicked.connect(self.sendStop) #Asociar la funcion enviar cero para frenar
         
-        self.ui.lcdPresion1.display(128)
-        self.ui.lcdTemperatura1.display(64)
-        self.ui.lcdPresion2.display(256)
-        self.ui.lcdTemperatura2.display(32)
+        self.ui.lcdN1P_e.display(128)
+        self.ui.lcdN1P_t.display(64)
+        self.ui.lcdN1P_t.display(256)
         self.show()
         
         # Configurar broker MQTT
         self.broker_address = socket.gethostbyname(socket.gethostname()) #Obtener el IP de la maquina = IP del broker
         self.topic = "Sincro" #Tópico donde se publica el epoch de sincronismo
-        self.subscribe_topic_1 = "Sensor" #Tópico al que se suscribe con información del nodo 1
-        self.subscribe_topic_2 = "Sensor2" #Tópico al que se suscribe con información del nodo 1
-        # MQTT client setup
+        self.subscribe_topic_1 = "Sensor1" #Tópico al que se suscribe con información del nodo 1 (Aguas Abajo)
+        self.subscribe_topic_2 = "Sensor2" #Tópico al que se suscribe con información del nodo 2 (Aguas Arriba)
+        self.subscribe_topic_3 = "Sensor3" #Tópico al que se suscribe con información del nodo 3 (Exterior)
+        # Configuracion del cliente MQTT
         self.client = mqtt.Client()
         self.client.on_message = self.on_message #Ejecución de la funcion "on_message" cuando hay una lectura
         self.client.on_connect = self.on_connect #Conexión al Ejecución de la funcion "on_message" cuando hay una lectura
         self.client.connect(self.broker_address) #Conexión al Broker
-        self.client.subscribe(self.subscribe_topic_1) #Suscripción al tópico Sensor
+        self.client.subscribe(self.subscribe_topic_1) #Suscripción al tópico Sensor1
         self.client.subscribe(self.subscribe_topic_2) #Suscripción al tópico Sensor2
+        self.client.subscribe(self.subscribe_topic_3) #Suscripción al tópico Sensor3
         self.client.loop_start()
         # Archivo Logger CSV
-        self.csv_filename = "data.csv"
-        self.csv_fieldnames = ["Calibracion","Presion","Temperatura","Sensor"]
+        self.csv_filename = "datos.csv"
+        self.csv_fieldnames = ["Timestamp","Nodo","V1","V2","V3"]
+        # nodo | V1 | V2 | V3
+        #  N1  |P_e |P_t | T
+        #  N2  |P_e |P_t | T
+        #  N3  |P_atm|%H | T
         
     # MQTT message handler y actualizador del Loggers
     def on_message(self, client, userdata, message):
@@ -54,19 +54,31 @@ class Form(QMainWindow):
         payload_str = payload_str.split(' | ') #Separa el string que viene con el caracter |
         topic_str = message.topic
         type(topic_str)
-        if(message.topic == self.subscribe_topic_1):
-            self.ui.lcdPresion1.display(payload_str[0])
-            self.ui.lcdTemperatura1.display(payload_str[2])
-        elif(message.topic == self.subscribe_topic_2):
-            self.ui.lcdPresion2.display(payload_str[0])
-            self.ui.lcdTemperatura2.display(payload_str[2])
+        # Nodo 1
+        if(message.topic == self.subscribe_topic_1): 
+            self.ui.lcdTimestamp.display(payload_str[0])
+            self.ui.lcdN1P_e.display(payload_str[2])
+            self.ui.lcdN1P_t.display(payload_str[3])
+            self.ui.lcdN1T.display(payload_str[4])
+        # Nodo 2
+        elif(message.topic == self.subscribe_topic_2): 
+            self.ui.lcdN2P_e.display(payload_str[2])
+            self.ui.lcdN2P_t.display(payload_str[3])
+            self.ui.lcdN2T.display(payload_str[4])
+        # Nodo 3
+        elif(message.topic == self.subscribe_topic_3):
+            self.ui.lcdN3P_atm.display(payload_str[2])
+            self.ui.lcdN3T.display(payload_str[3])
+            self.ui.lcdN3H.display(payload_str[4])
+        # Escribir los datos en el logger
         with open(self.csv_filename, "a", newline="") as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=self.csv_fieldnames)
             writer.writerow({
-                "Calibracion": payload_str[1],
-                "Presion": payload_str[0],
-                "Temperatura": payload_str[2],
-                "Sensor": message.topic
+                "Timestamp": payload_str[0],
+                "Nodo": payload_str[1],
+                "V1": payload_str[2],
+                "V2": payload_str[3],
+                "V3": payload_str[4]
             })
 
     # Conexión al broker MQTT
@@ -81,9 +93,9 @@ class Form(QMainWindow):
     
     #Funcion para enviar epoch para sincronizar
     def sendSincro(self):
-        self.ui.ei.text()
-        self.client.publish(self.topic, self.ui.ei.text())
-        #self.client.publish(self.topic, int(time.time()))
+        #self.ui.ei.text()
+        #self.client.publish(self.topic, self.ui.ei.text())
+        self.client.publish(self.topic, int(time.time()))
 
     def startTimer(self):    
         if self.ui.pushButton.text() == "Start Timer":
