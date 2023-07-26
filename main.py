@@ -26,10 +26,12 @@ class Form(QMainWindow):
         
         # Configurar broker MQTT
         self.broker_address = socket.gethostbyname(socket.gethostname()) #Obtener el IP de la maquina = IP del broker
-        self.topic = "Sincro" #Tópico donde se publica el epoch de sincronismo
-        self.subscribe_topic_1 = "Sensor1" #Tópico al que se suscribe con información del nodo 1 (Aguas Abajo)
-        self.subscribe_topic_2 = "Sensor2" #Tópico al que se suscribe con información del nodo 2 (Aguas Arriba)
-        self.subscribe_topic_3 = "Sensor3" #Tópico al que se suscribe con información del nodo 3 (Exterior)
+        self.topic_1 = "Sincro" #Tópico donde se publica el epoch de sincronismo
+        self.topic_2 = "Sincro2" #Tópico donde se publica el epoch de sincronismo
+        self.topic_3 = "Sincro3" #Tópico donde se publica el epoch de sincronismo
+        self.subscribe_topic_1 = "/Sensor/1" #Tópico al que se suscribe con información del nodo 1 (Aguas Abajo)
+        self.subscribe_topic_2 = "/Sensor/2" #Tópico al que se suscribe con información del nodo 2 (Aguas Arriba)
+        self.subscribe_topic_3 = "/Sensor/3" #Tópico al que se suscribe con información del nodo 3 (Exterior)
         # Configuracion del cliente MQTT
         self.client = mqtt.Client()
         self.client.on_message = self.on_message #Ejecución de la funcion "on_message" cuando hay una lectura
@@ -80,7 +82,6 @@ class Form(QMainWindow):
                 "V2": payload_str[3],
                 "V3": payload_str[4]
             })
-
     # Conexión al broker MQTT
     def on_connect(self,client, userdata, flags, rc):
         print("Conectado al broker MQTT con código " + str(rc))
@@ -89,13 +90,17 @@ class Form(QMainWindow):
 
     #Funcion para enviar cero para frenar
     def sendStop(self):
-        self.client.publish(self.topic, 0)
+        self.client.publish(self.topic_1, 0)
+        self.client.publish(self.topic_2, 0)
+        self.client.publish(self.topic_3, 0)
     
     #Funcion para enviar epoch para sincronizar
     def sendSincro(self):
         #self.ui.ei.text()
         #self.client.publish(self.topic, self.ui.ei.text())
-        self.client.publish(self.topic, int(time.time()))
+        self.client.publish(self.topic_1, int(time.time()))
+        self.client.publish(self.topic_2, int(time.time()))
+        self.client.publish(self.topic_3, int(time.time()))
 
     def startTimer(self):    
         if self.ui.pushButton.text() == "Start Timer":

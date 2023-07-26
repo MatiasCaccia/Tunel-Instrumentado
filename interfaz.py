@@ -42,7 +42,7 @@ class Ui_MainWindow(object):
         self.lcdN3H.setGeometry(QtCore.QRect(670, 140, 300, 41))
         self.lcdN3H.setObjectName("lcdN3H")
         # -------- Timestamp --------
-        self.lcdTimestamp = QtWidgets.QLCDNumber(self.groupBox)
+        self.lcdTimestamp = QtWidgets.QLCDNumber(10, self.groupBox)
         self.lcdTimestamp.setGeometry(QtCore.QRect(670, 315, 300, 41))
         self.lcdTimestamp.setObjectName("lcdTimestamp")
 
